@@ -211,6 +211,11 @@ public final class RowMapperManager {
                 info.setMd5(rs.getString("md5"));
             } catch (SQLException ignore) {
             }
+            try {
+                info.setEncryptedDataKey(rs.getString("encrypted_data_key"));
+            } catch (SQLException ignore) {
+        
+            }
             return info;
         }
     }
@@ -241,6 +246,10 @@ public final class RowMapperManager {
             }
             try {
                 info.setMd5(rs.getString("md5"));
+            } catch (SQLException ignore) {
+            }
+            try {
+                info.setEncryptedDataKey(rs.getString("encrypted_data_key"));
             } catch (SQLException ignore) {
             }
             return info;
@@ -304,6 +313,10 @@ public final class RowMapperManager {
             }
             try {
                 info.setType(rs.getString("type"));
+            } catch (SQLException ignore) {
+            }
+            try {
+                info.setEncryptedDataKey(rs.getString("encrypted_data_key"));
             } catch (SQLException ignore) {
             }
             return info;
@@ -372,6 +385,11 @@ public final class RowMapperManager {
             info.setEffect(rs.getString("effect"));
             info.setType(rs.getString("type"));
             info.setSchema(rs.getString("c_schema"));
+            try {
+                info.setEncryptedDataKey(rs.getString("encrypted_data_key"));
+            } catch (SQLException ignore) {
+        
+            }
             return info;
         }
     }
@@ -516,6 +534,11 @@ public final class RowMapperManager {
             configHistoryInfo.setOpType(rs.getString("op_type"));
             configHistoryInfo.setCreatedTime(rs.getTimestamp("gmt_create"));
             configHistoryInfo.setLastModifiedTime(rs.getTimestamp("gmt_modified"));
+            try {
+                configHistoryInfo.setEncryptedDataKey(rs.getString("encrypted_data_key"));
+            } catch (SQLException ignore) {
+        
+            }
             return configHistoryInfo;
         }
     }
