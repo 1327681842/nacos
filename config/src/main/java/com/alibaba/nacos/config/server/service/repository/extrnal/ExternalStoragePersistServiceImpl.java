@@ -681,20 +681,17 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
     public boolean batchPublishAggr(final String dataId, final String group, final String tenant,
             final Map<String, String> datumMap, final String appName) {
         try {
-            Boolean isPublishOk = tjt.execute(new TransactionCallback<Boolean>() {
-                @Override
-                public Boolean doInTransaction(TransactionStatus status) {
-                    for (Map.Entry<String, String> entry : datumMap.entrySet()) {
-                        try {
-                            if (!addAggrConfigInfo(dataId, group, tenant, entry.getKey(), appName, entry.getValue())) {
-                                throw new TransactionSystemException("error in addAggrConfigInfo");
-                            }
-                        } catch (Throwable e) {
+            Boolean isPublishOk = tjt.execute(status -> {
+                for (Map.Entry<String, String> entry : datumMap.entrySet()) {
+                    try {
+                        if (!addAggrConfigInfo(dataId, group, tenant, entry.getKey(), appName, entry.getValue())) {
                             throw new TransactionSystemException("error in addAggrConfigInfo");
                         }
+                    } catch (Throwable e) {
+                        throw new TransactionSystemException("error in addAggrConfigInfo");
                     }
-                    return Boolean.TRUE;
                 }
+                return Boolean.TRUE;
             });
             if (isPublishOk == null) {
                 return false;
@@ -710,23 +707,20 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
     public boolean replaceAggr(final String dataId, final String group, final String tenant,
             final Map<String, String> datumMap, final String appName) {
         try {
-            Boolean isReplaceOk = tjt.execute(new TransactionCallback<Boolean>() {
-                @Override
-                public Boolean doInTransaction(TransactionStatus status) {
-                    try {
-                        String appNameTmp = appName == null ? "" : appName;
-                        removeAggrConfigInfo(dataId, group, tenant);
-                        String tenantTmp = StringUtils.isBlank(tenant) ? StringUtils.EMPTY : tenant;
-                        String sql = "INSERT INTO config_info_aggr(data_id, group_id, tenant_id, datum_id, app_name, content, gmt_modified) VALUES(?,?,?,?,?,?,?) ";
-                        for (Map.Entry<String, String> datumEntry : datumMap.entrySet()) {
-                            jt.update(sql, dataId, group, tenantTmp, datumEntry.getKey(), appNameTmp,
-                                    datumEntry.getValue(), new Timestamp(System.currentTimeMillis()));
-                        }
-                    } catch (Throwable e) {
-                        throw new TransactionSystemException("error in addAggrConfigInfo");
+            Boolean isReplaceOk = tjt.execute(status -> {
+                try {
+                    String appNameTmp = appName == null ? "" : appName;
+                    removeAggrConfigInfo(dataId, group, tenant);
+                    String tenantTmp = StringUtils.isBlank(tenant) ? StringUtils.EMPTY : tenant;
+                    String sql = "INSERT INTO config_info_aggr(data_id, group_id, tenant_id, datum_id, app_name, content, gmt_modified) VALUES(?,?,?,?,?,?,?) ";
+                    for (Map.Entry<String, String> datumEntry : datumMap.entrySet()) {
+                        jt.update(sql, dataId, group, tenantTmp, datumEntry.getKey(), appNameTmp,
+                                datumEntry.getValue(), new Timestamp(System.currentTimeMillis()));
                     }
-                    return Boolean.TRUE;
+                } catch (Throwable e) {
+                    throw new TransactionSystemException("error in addAggrConfigInfo");
                 }
+                return Boolean.TRUE;
             });
             if (isReplaceOk == null) {
                 return false;
@@ -1435,13 +1429,11 @@ public class ExternalStoragePersistServiceImpl implements PersistService {
                 + " g, config_info t WHERE g.id = t.id ";
         PaginationHelper<ConfigInfoWrapper> helper = createPaginationHelper();
         
-        List<String> params = new ArrayList<String>();
-        
         try {
-            return helper.fetchPageLimit(sqlCountRows, sqlFetchRows, params.toArray(), pageNo, pageSize,
+            return helper.fetchPageLimit(sqlCountRows, sqlFetchRows, new Object[] {(pageNo - 1) * pageSize, pageSize}, pageNo, pageSize,
                     CONFIG_INFO_WRAPPER_ROW_MAPPER);
         } catch (CannotGetJdbcConnectionException e) {
-            LogUtil.FATAL_LOG.error("[db-error] " + e.toString(), e);
+            LogUtil.FATAL_LOG.error("[db-error]", e);
             throw e;
         }
     }

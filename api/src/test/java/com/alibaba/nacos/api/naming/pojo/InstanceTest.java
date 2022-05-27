@@ -14,29 +14,22 @@
  * limitations under the License.
  */
 
-package com.alibaba.nacos.naming.monitor;
+package com.alibaba.nacos.api.naming.pojo;
 
-import org.junit.Before;
+import junit.framework.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+public class InstanceTest extends TestCase {
 
-public class MetricsMonitorTest {
-    
-    @Before
-    public void setUp() {
-        MetricsMonitor.resetPush();
-    }
-    
     @Test
-    public void testGetTotalPush() {
-        assertEquals(0, MetricsMonitor.getTotalPushMonitor().get());
-        assertEquals(1, MetricsMonitor.getTotalPushMonitor().incrementAndGet());
-    }
-    
-    @Test
-    public void testGetFailedPush() {
-        assertEquals(0, MetricsMonitor.getFailedPushMonitor().get());
-        assertEquals(1, MetricsMonitor.getFailedPushMonitor().incrementAndGet());
+    public void testCheckClusterNameFormat() {
+        Instance instance = new Instance();
+        instance.setClusterName("demo");
+        assertEquals("demo", instance.getClusterName());
+        try {
+            instance.setClusterName("demo,demo1,demo2");
+        } catch (Exception e) {
+            assertEquals("cluster name can only have these characters: 0-9a-zA-Z-, current: demo,demo1,demo2", e.getMessage());
+        }
     }
 }
